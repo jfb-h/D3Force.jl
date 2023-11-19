@@ -1,0 +1,4 @@
+name = "D3Force"
+uuid = "2564d02d-fea8-42ab-8639-4b54a2710635"
+authors = ["Jakob Hoffmann <jfb-hoffmann@hotmail.de>"]
+version = "0.1.0"
