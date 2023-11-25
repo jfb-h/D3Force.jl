@@ -1,27 +1,45 @@
 module D3Force
 
-include("src/forces.jl")
+include("forces.jl")
+
+using Accessors
 
 export Node
 export Simulation
 export tick!
+export init_simulation
 
-mutable struct Node{T<:Integer, S<:Real, R<:Real}
-    idx::T
-    x::S
-    y::S
-    vx::R
-    vy::R
+@kwdef struct Node
+    idx::Int
+    x::Float64
+    y::Float64
+    vx::Float64 = 0.0
+    vy::Float64 = 0.0
 end
 
-@kwdef mutable struct Simulation{T, F}
+@kwdef mutable struct Simulation
     nodes::Vector{Node}
-    forces::Vector{F}
-    alpha::T = 1.0
-    alpha_min::T = 0.001
-    alpha_decay::T = 0.0228
-    alpha_target::T = 0.0
-    velocity_decay::T = 0.4
+    forces::Vector{DataType}
+    alpha::Float64 = 1.0
+    alpha_min::Float64 = 0.001
+    alpha_decay::Float64 = 0.0228
+    alpha_target::Float64 = 0.0
+    velocity_decay::Float64 = 0.6
+end
+
+function init_node(idx, init_radius, init_angle)
+    radius = init_radius * sqrt(0.5 + idx)
+    angle = init_angle * idx
+    x = radius * cos(angle)
+    y = radius * sin(angle)
+    return Node(;idx, x, y)
+end
+
+function init_simulation(N::Int)
+    r, a = 10.0, pi * (3 - sqrt(5.0))
+    nodes = [init_node(i, r, a) for i in 1:N]
+    forces = DataType[]
+    return Simulation(;nodes, forces)
 end
 
 function stop() end
@@ -33,16 +51,16 @@ function update_alpha!(s::Simulation)
 end
 
 function update_nodes!(s::Simulation)
-    for f in s.forces
-        force!(f, s.nodes, s.alpha)
+    for f! in s.forces
+        f!(s.nodes, s.alpha)
     end
     return s
 end
 
 function update_velocities!(s::Simulation)
     for node in s.nodes
-        node.vx = node.vx * s.velocity_decay
-        node.vy = node.vy * s.velocity_decay
+        @set node.vx = node.vx * s.velocity_decay
+        @set node.vy = node.vy * s.velocity_decay
     end
     return s
 end
