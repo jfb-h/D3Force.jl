@@ -7,16 +7,17 @@ abstract type Force end
     strength::Float64 = 1
 end
 
-function (f::Center)(nodes)
+function (f::Center)(nodes, links, alpha)
     n = length(nodes)
     sx = sum(n.x for n in nodes)
     sy = sum(n.y for n in nodes)
     sx = (sx / n - f.x) * f.strength
     sy = (sy / n - f.y) * f.strength
     for n in nodes
-        node.x -= sx
-        node.y -= sy
+        n.x -= sx
+        n.y -= sy
     end
+    return nodes
 end
 
 struct Collide <: Force

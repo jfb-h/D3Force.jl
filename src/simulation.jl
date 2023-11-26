@@ -1,4 +1,4 @@
-@kwdef struct Node
+@kwdef mutable struct Node
     idx::Int
     x::Float64
     y::Float64
@@ -25,11 +25,10 @@ function init_node(idx, init_radius, init_angle)
     return Node(;idx, x, y)
 end
 
-function init_simulation(N::Int)
+function init_simulation(N::Int; links = Tuple{Int, Int}[], forces=DataType[])
     r, a = 10.0, pi * (3 - sqrt(5.0))
     nodes = [init_node(i, r, a) for i in 1:N]
-    forces = DataType[]
-    return Simulation(;nodes, forces)
+    return Simulation(;nodes, links, forces)
 end
 
 function stop() end
@@ -42,15 +41,15 @@ end
 
 function update_nodes!(s::Simulation)
     for f! in s.forces
-        f!(s.nodes, s.alpha)
+        f!(s.nodes, s.links, s.alpha)
     end
     return s
 end
 
 function update_velocities!(s::Simulation)
-    for node in s.nodes
-        @set node.vx = node.vx * s.velocity_decay
-        @set node.vy = node.vy * s.velocity_decay
+    for n in nodes
+        n.vx = n.vx * s.velocity_decay
+        n.vy = n.vy * s.velocity_decay
     end
     return s
 end
